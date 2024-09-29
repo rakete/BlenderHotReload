@@ -1,0 +1,13 @@
+{
+  "ignored_patterns": [
+    ".*\\.pyc$",
+    ".vscode",
+    "__pycache__"
+  ],
+  "last_change": {
+    "path": "reload.py",
+    "mod_time": "2024-09-29T01:22:43.9111671+02:00"
+  },
+  "blender_path": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+  "module_name": "HotReload"
+}
