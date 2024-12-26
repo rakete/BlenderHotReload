@@ -14,10 +14,11 @@ import (
 )
 
 type Config struct {
-	IgnoredPatterns []string `json:"ignored_patterns"`
-	LastChange      *Change  `json:"last_change,omitempty"`
-	BlenderPath     string   `json:"blender_path"`
-	ModuleName      string   `json:"module_name"`
+	IgnoredPatterns  []string `json:"ignored_patterns"`
+	LastChange       *Change  `json:"last_change,omitempty"`
+	BlenderPath      string   `json:"blender_path"`
+	ModuleNames      []string `json:"module_names"`
+	OtherWatchedDirs []string `json:"other_watched_dirs"`
 }
 
 type Change struct {
