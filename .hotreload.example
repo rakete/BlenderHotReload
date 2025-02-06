@@ -4,10 +4,6 @@
     ".*\\.vscode.*",
     ".*\\__pycache__.*"
   ],
-  "last_change": {
-    "path": "reload.py",
-    "mod_time": "2025-02-05T18:02:42.2644132+01:00"
-  },
   "blender_path": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
   "watched_dirs": [
     ".|BlenderHotReload",
