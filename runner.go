@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -62,7 +63,7 @@ func writeConfig(config *Config) error {
 
 func shouldIgnore(file string, ignoredPatterns []string) bool {
 	for _, pattern := range ignoredPatterns {
-		matched, _ := filepath.Match(pattern, file)
+		matched, _ := regexp.MatchString(pattern, file)
 		if matched {
 			return true
 		}
@@ -192,10 +193,7 @@ func main() {
 					return
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					if strings.HasPrefix(event.Name, ".idea") || strings.HasPrefix(event.Name, ".hotreload") || strings.HasSuffix(event.Name, "~") {
-						continue
-					}
-					if strings.Contains(event.Name, "__pycache__") {
+					if strings.HasPrefix(event.Name, ".hotreload") {
 						continue
 					}
 					if shouldIgnore(event.Name, config.IgnoredPatterns) {
