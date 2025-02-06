@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/farmergreg/rfsnotify"
@@ -14,11 +15,10 @@ import (
 )
 
 type Config struct {
-	IgnoredPatterns  []string `json:"ignored_patterns"`
-	LastChange       *Change  `json:"last_change,omitempty"`
-	BlenderPath      string   `json:"blender_path"`
-	ModuleNames      []string `json:"module_names"`
-	OtherWatchedDirs []string `json:"other_watched_dirs"`
+	IgnoredPatterns []string `json:"ignored_patterns"`
+	LastChange      *Change  `json:"last_change,omitempty"`
+	BlenderPath     string   `json:"blender_path"`
+	WatchedDirs     []string `json:"watched_dirs"`
 }
 
 type Change struct {
@@ -71,14 +71,7 @@ func shouldIgnore(file string, ignoredPatterns []string) bool {
 
 var blenderCmd *exec.Cmd
 
-func onChange(event fsnotify.Event, config *Config) {
-	fmt.Printf("File changed: %s\n", event.Name)
-	info, err := os.Stat(event.Name)
-	if err != nil {
-		log.Printf("Error getting file info: %v", err)
-		return
-	}
-
+func runBlender(config *Config) {
 	if blenderCmd == nil || blenderCmd.ProcessState != nil {
 		if config.BlenderPath == "" {
 			log.Println("Blender path not set in config")
@@ -113,6 +106,16 @@ func onChange(event fsnotify.Event, config *Config) {
 	} else {
 		fmt.Println("Blender is already running")
 	}
+}
+
+func onChange(event fsnotify.Event, config *Config) {
+	fmt.Printf("File changed: %s\n", event.Name)
+	info, err := os.Stat(event.Name)
+	if err != nil {
+		log.Printf("Error getting file info: %v", err)
+		return
+	}
+	runBlender(config)
 
 	config.LastChange = &Change{
 		Path:    event.Name,
@@ -154,6 +157,8 @@ func main() {
 	}
 	log.Printf("Watching for changes in %s", cwd)
 
+	runBlender(config)
+
 	done := make(chan bool)
 	go func() {
 		for {
@@ -163,7 +168,13 @@ func main() {
 					return
 				}
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					if filepath.Base(event.Name) == ".hotreload" || shouldIgnore(event.Name, config.IgnoredPatterns) {
+					if strings.HasPrefix(event.Name, ".idea") || strings.HasPrefix(event.Name, ".hotreload") || strings.HasSuffix(event.Name, "~") {
+						continue
+					}
+					if strings.Contains(event.Name, "__pycache__") {
+						continue
+					}
+					if shouldIgnore(event.Name, config.IgnoredPatterns) {
 						continue
 					}
 					if debounceTimer != nil {

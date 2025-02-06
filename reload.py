@@ -14,18 +14,33 @@ last_mod_time = datetime.now().timestamp()
 def check_for_changes():
     global last_mod_time
 
+    # for addon in bpy.context.preferences.addons:
+    #     module_name = addon.module
+    #     if module_name.startswith("bl_ext"):
+    #         continue
+    #
+    # user_addon_path = os.path.join(bpy.utils.user_resource('SCRIPTS'), "addons")
+    # user_path = os.path.join(user_addon_path, module_name)
+    # if not os.path.exists(user_path):
+    #     print(module_name)
+
     hotreload_path = os.path.join(WATCHED_DIR, ".hotreload")
     if os.path.exists(hotreload_path):
-
         last_change = os.path.getmtime(hotreload_path)
 
         if last_change > last_mod_time:
             print("Detected change in", hotreload_path)
             with open(hotreload_path, "r") as f:
-                data = json.load(f)
-                module_name = data.get("module_name")
                 last_mod_time = last_change
-                reload_module(module_name)
+                data = json.load(f)
+
+                watched_dirs = data.get("watched_dirs")
+                for watched_dir_and_module_names in watched_dir:
+                    watched_dir_split = watched_dir_and_module_names.split("|")
+                    if len(watched_dir_split) > 1:
+                        watched_dir, module_names = watched_dir_split
+                        for module_name in module_names.split(","):
+                            reload_module(module_name)
 
 def reload_module(module_name):
     try:
@@ -52,7 +67,7 @@ wait_time = 2.0
 
 class StartPollingOperator(bpy.types.Operator):
     bl_idname = "wm.start_polling"
-    bl_label = "Start Polling Directory"
+    bl_label = "Start Hot Reload Polling"
 
     duration = None
 
@@ -83,7 +98,7 @@ class StartPollingOperator(bpy.types.Operator):
 
 class StopPollingOperator(bpy.types.Operator):
     bl_idname = "wm.stop_polling"
-    bl_label = "Stop Polling Directory"
+    bl_label = "Stop Hot Reload Polling"
 
     def execute(self, context):
         print("Stopping polling")
