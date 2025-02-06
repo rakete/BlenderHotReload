@@ -25,8 +25,6 @@ def register():
     bpy.utils.register_class(StartPollingOperator)
     bpy.utils.register_class(StopPollingOperator)
 
-    bpy.ops.wm.start_polling()
-
 def unregister():
     if not WATCHED_DIR:
         return
