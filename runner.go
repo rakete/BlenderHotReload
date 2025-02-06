@@ -22,8 +22,9 @@ type Config struct {
 }
 
 type Change struct {
-	Path    string    `json:"path"`
-	ModTime time.Time `json:"mod_time"`
+	ChangedDir string    `json:"changed_dir"`
+	Path       string    `json:"path"`
+	ModTime    time.Time `json:"mod_time"`
 }
 
 func readConfig() (*Config, error) {
@@ -117,9 +118,24 @@ func onChange(event fsnotify.Event, config *Config) {
 	}
 	runBlender(config)
 
+	changedDir := "."
+	for _, otherDirAndModuleNames := range config.WatchedDirs {
+		otherDir := strings.Split(otherDirAndModuleNames, "|")[0]
+		if otherDir == "." {
+			continue
+		}
+		otherDir, _ = filepath.Abs(filepath.Clean(otherDir))
+		eventPath, _ := filepath.Abs(filepath.Clean(event.Name))
+		fmt.Println("HasPrefix:", eventPath, otherDir)
+		if strings.HasPrefix(eventPath, otherDir) {
+			changedDir = otherDir
+			break
+		}
+	}
 	config.LastChange = &Change{
-		Path:    event.Name,
-		ModTime: info.ModTime(),
+		ChangedDir: changedDir,
+		Path:       event.Name,
+		ModTime:    info.ModTime(),
 	}
 
 	if err := writeConfig(config); err != nil {
@@ -149,6 +165,14 @@ func main() {
 	err = watcher.AddRecursive(".")
 	if err != nil {
 		log.Fatalf("Error adding watcher: %v", err)
+	}
+
+	for _, otherDirAndModuleNames := range config.WatchedDirs {
+		otherDir := strings.Split(otherDirAndModuleNames, "|")[0]
+		// if otherDir exists add to watcher
+		if _, err := os.Stat(otherDir); err == nil {
+			err = watcher.AddRecursive(otherDir)
+		}
 	}
 
 	cwd, err := os.Getwd()

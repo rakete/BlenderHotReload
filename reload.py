@@ -11,36 +11,29 @@ WATCHED_DIR = os.getenv("HOTRELOAD_WATCHED_DIR", "")
 # Store the last modification time and changed files
 last_mod_time = datetime.now().timestamp()
 
+
 def check_for_changes():
     global last_mod_time
 
-    # for addon in bpy.context.preferences.addons:
-    #     module_name = addon.module
-    #     if module_name.startswith("bl_ext"):
-    #         continue
-    #
-    # user_addon_path = os.path.join(bpy.utils.user_resource('SCRIPTS'), "addons")
-    # user_path = os.path.join(user_addon_path, module_name)
-    # if not os.path.exists(user_path):
-    #     print(module_name)
-
     hotreload_path = os.path.join(WATCHED_DIR, ".hotreload")
     if os.path.exists(hotreload_path):
-        last_change = os.path.getmtime(hotreload_path)
+        current_mod_time = os.path.getmtime(hotreload_path)
 
-        if last_change > last_mod_time:
+        if current_mod_time > last_mod_time:
             print("Detected change in", hotreload_path)
             with open(hotreload_path, "r") as f:
-                last_mod_time = last_change
+                last_mod_time = current_mod_time
                 data = json.load(f)
-
+                last_change = data.get("last_change")
                 watched_dirs = data.get("watched_dirs")
-                for watched_dir_and_module_names in watched_dir:
+                for watched_dir_and_module_names in watched_dirs:
                     watched_dir_split = watched_dir_and_module_names.split("|")
                     if len(watched_dir_split) > 1:
                         watched_dir, module_names = watched_dir_split
-                        for module_name in module_names.split(","):
-                            reload_module(module_name)
+                        changed_dir = last_change.get("changed_dir")
+                        if (changed_dir == "." and watched_dir == ".") or os.path.abspath(watched_dir) == os.path.abspath(changed_dir):
+                            for module_name in module_names.split(","):
+                                reload_module(module_name)
 
 def reload_module(module_name):
     try:
