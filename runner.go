@@ -61,9 +61,17 @@ func writeConfig(config *Config) error {
 	return os.WriteFile(".hotreload", data, 0644)
 }
 
-func shouldIgnore(file string, ignoredPatterns []string) bool {
+func shouldIgnore(event fsnotify.Event, ignoredPatterns []string) bool {
+	info, err := os.Stat(event.Name)
+	if err != nil {
+		log.Printf("Error getting file info: %v", err)
+		return true
+	}
+	if info.IsDir() {
+		return true
+	}
 	for _, pattern := range ignoredPatterns {
-		matched, _ := regexp.MatchString(pattern, file)
+		matched, _ := regexp.MatchString(pattern, event.Name)
 		if matched {
 			return true
 		}
@@ -111,12 +119,13 @@ func runBlender(config *Config) {
 }
 
 func onChange(event fsnotify.Event, config *Config) {
-	fmt.Printf("File changed: %s\n", event.Name)
 	info, err := os.Stat(event.Name)
 	if err != nil {
 		log.Printf("Error getting file info: %v", err)
 		return
 	}
+	fmt.Printf("File changed: %s\n", event.Name)
+
 	runBlender(config)
 
 	changedDir := "."
@@ -196,7 +205,7 @@ func main() {
 					if strings.HasPrefix(event.Name, ".hotreload") {
 						continue
 					}
-					if shouldIgnore(event.Name, config.IgnoredPatterns) {
+					if shouldIgnore(event, config.IgnoredPatterns) {
 						continue
 					}
 					if debounceTimer != nil {
