@@ -172,19 +172,6 @@ func main() {
 	}
 	defer watcher.Close()
 
-	err = watcher.AddRecursive(".")
-	if err != nil {
-		log.Fatalf("Error adding watcher: %v", err)
-	}
-
-	for _, otherDirAndModuleNames := range config.WatchedDirs {
-		otherDir := strings.Split(otherDirAndModuleNames, "|")[0]
-		// if otherDir exists add to watcher
-		if _, err := os.Stat(otherDir); err == nil {
-			err = watcher.AddRecursive(otherDir)
-		}
-	}
-
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Error getting current working directory: %v", err)
@@ -223,6 +210,19 @@ func main() {
 			}
 		}
 	}()
+
+	err = watcher.AddRecursive(".")
+	if err != nil {
+		log.Fatalf("Error adding watcher: %v", err)
+	}
+
+	for _, otherDirAndModuleNames := range config.WatchedDirs {
+		otherDir := strings.Split(otherDirAndModuleNames, "|")[0]
+		// if otherDir exists add to watcher
+		if _, err := os.Stat(otherDir); err == nil {
+			err = watcher.AddRecursive(otherDir)
+		}
+	}
 
 	<-done
 }
