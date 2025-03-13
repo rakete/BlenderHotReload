@@ -3,7 +3,7 @@ bl_info = {
     "blender": (2, 80, 0),
     "category": "Development",
     "version": (1, 0, 0),
-    "author": "Andrreas Raster",
+    "author": "Andreas Raster",
     "description": "A Blender addon for hot reloading other addons.",
     "location": "",
     "warning": "",
