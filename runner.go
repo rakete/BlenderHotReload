@@ -70,6 +70,9 @@ func shouldIgnore(event fsnotify.Event, ignoredPatterns []string) bool {
 	if info.IsDir() {
 		return true
 	}
+	if time.Now().Sub(info.ModTime()).Seconds() > 10 {
+		return true
+	}
 	for _, pattern := range ignoredPatterns {
 		matched, _ := regexp.MatchString(pattern, event.Name)
 		if matched {
