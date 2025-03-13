@@ -1,6 +1,6 @@
 bl_info = {
     "name": "BlenderHotReload Addon",
-    "blender": (2, 80, 0),
+    "blender": (4, 3, 0),
     "category": "Development",
     "version": (1, 0, 0),
     "author": "Andreas Raster",
