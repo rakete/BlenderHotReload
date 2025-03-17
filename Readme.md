@@ -48,7 +48,7 @@ The addon uses a `.hotreload` config file to customize its behavior.
 
 - `ignored_patterns`: Patterns of files/directories to ignore
 - `blender_path`: Full path to Blender executable
-- `watched_dirs`: Directories to watch for changes (format: "path|comma_seperated_module_names", you need to include "." as first element, which will be the working directory where BlenderHotReload.exe is started)
+- `watched_dirs`: Directories to watch for changes (format: "path|comma_seperated_module_names", you need to include "." as first element, which will be the working directory where BlenderHotReload.exe is started, the module names are the names of the modules that will be reloaded when something changes in path)
 
 ## Usage
 
@@ -58,6 +58,6 @@ You need to copy the `.hotreload.example` file to `.hotreload` in your addon dir
 
 Once you start the runner from your addon source directory it will start a blender instance and watch the source directory for changes.
 
-Inside Blender you have to start the polling operator with `F3 -> wm.start_polling`. You can stop the polling with `F3 -> wm.stop_polling`.
+Inside Blender you can click "Hot Reload" in the upper right corner to enable the hot reload polling. As long as that is active blender will automatically reload modules where any file inside the watched dirs is changed. You can stop the polling with the little X button besides the "Hot Reload" button.
 
 Any change that the runner detects is written to the `.hotreload` file as `last_change` field. When the `.hotreload` changes, the polling operator will reload the addons that have been configured in the `watched_dirs` config option.
