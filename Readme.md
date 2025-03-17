@@ -26,6 +26,8 @@ The runner.go program recursively watches all files under the directory where it
 5. Enable plugin in Blender
 6. Start polling operator by clicking "Hot Reload" in upper right corner
 
+## Usage
+
 You need two parts, the BlenderHotReload addon needs to be installed in blender, and BlenderHotReload runner needs to be installed so that you can run it from a terminal (put the installation directory in your $PATH).
 
 You need to copy the `.hotreload.example` file to `.hotreload` in your addon directory. And change it so that you have `blender_path` and `watched_dirs` customized for your setup. 
