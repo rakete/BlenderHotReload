@@ -2,7 +2,9 @@
 
 A Blender addon for automatically reloading other addons when changes are made to their files. It exists because I wanted something that isn't specifically made for one IDE, but instead can be used with anything from vim to Intellij IDEA. 
 
-I am kind of hoping this will solve the problems with Blender crashing every once in a while that I had with other solutions. When I try to use this addon on itself Blender crashes though.
+It is implemented with a smaller runner.go program that starts blender with a WATCHED_DIR environment variable, which is then used inside blender by the BlenderHotReload python addon.
+
+The runner.go program recursively watches all files under the directory where it was started for changes, and everytime something changes it notifies the BlenderHotReload addon about it. The addon will then reload the addon that was configured to be reloaded on a change. 
 
 ## Installation
 
@@ -22,7 +24,17 @@ I am kind of hoping this will solve the problems with Blender crashing every onc
 4. Setup .hotreload (see below)
 4. Run BlenderHotReload.exe
 5. Enable plugin in Blender
-6. Start polling operator with `F3 -> wm.start_polling`
+6. Start polling operator by clicking "Hot Reload" in upper right corner
+
+You need two parts, the BlenderHotReload addon needs to be installed in blender, and BlenderHotReload runner needs to be installed so that you can run it from a terminal (put the installation directory in your $PATH).
+
+You need to copy the `.hotreload.example` file to `.hotreload` in your addon directory. And change it so that you have `blender_path` and `watched_dirs` customized for your setup. 
+
+Once you start the runner from your addon source directory it will start a blender instance and watch the source directory for changes.
+
+Inside Blender you can click "Hot Reload" in the upper right corner to enable the hot reload polling. As long as that is active blender will automatically reload modules where any file inside the watched dirs is changed. You can stop the polling with the little X button besides the "Hot Reload" button.
+
+Any change that the runner detects is written to the `.hotreload` file as `last_change` field. When the `.hotreload` changes, the polling operator will reload the addons that have been configured in the `watched_dirs` config option.
 
 ## Configuration
 
@@ -49,15 +61,3 @@ The addon uses a `.hotreload` config file to customize its behavior.
 - `ignored_patterns`: Patterns of files/directories to ignore
 - `blender_path`: Full path to Blender executable
 - `watched_dirs`: Directories to watch for changes (format: "path|comma_seperated_module_names", you need to include "." as first element, which will be the working directory where BlenderHotReload.exe is started, the module names are the names of the modules that will be reloaded when something changes in path)
-
-## Usage
-
-You need two parts, the BlenderHotReload addon needs to be installed in blender, and BlenderHotReload runner needs to be installed so that you can run it from a terminal (put the installation directory in your $PATH).
-
-You need to copy the `.hotreload.example` file to `.hotreload` in your addon directory. And change it so that you have `blender_path` and `watched_dirs` customized for your setup. 
-
-Once you start the runner from your addon source directory it will start a blender instance and watch the source directory for changes.
-
-Inside Blender you can click "Hot Reload" in the upper right corner to enable the hot reload polling. As long as that is active blender will automatically reload modules where any file inside the watched dirs is changed. You can stop the polling with the little X button besides the "Hot Reload" button.
-
-Any change that the runner detects is written to the `.hotreload` file as `last_change` field. When the `.hotreload` changes, the polling operator will reload the addons that have been configured in the `watched_dirs` config option.
