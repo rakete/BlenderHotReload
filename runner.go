@@ -17,12 +17,11 @@ import (
 
 type Config struct {
 	IgnoredPatterns []string `json:"ignored_patterns"`
-	LastChange      *Change  `json:"last_change,omitempty"`
 	BlenderPath     string   `json:"blender_path"`
 	WatchedDirs     []string `json:"watched_dirs"`
 }
 
-type Change struct {
+type LastChange struct {
 	ChangedDir string    `json:"changed_dir"`
 	Path       string    `json:"path"`
 	ModTime    time.Time `json:"mod_time"`
@@ -47,18 +46,13 @@ func readConfig() (*Config, error) {
 	return &config, nil
 }
 
-func writeConfig(config *Config) error {
-	oldConfig, oldErr := readConfig()
-	if oldErr != nil {
-		return oldErr
-	}
-	oldConfig.LastChange = config.LastChange
-	data, err := json.MarshalIndent(oldConfig, "", "  ")
+func writeLastChange(lastChange *LastChange) error {
+	data, err := json.MarshalIndent(lastChange, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(".hotreload", data, 0644)
+	return os.WriteFile(".hotreload_last_change", data, 0644)
 }
 
 func shouldIgnore(event fsnotify.Event, ignoredPatterns []string) bool {
@@ -145,13 +139,13 @@ func onChange(event fsnotify.Event, config *Config) {
 			break
 		}
 	}
-	config.LastChange = &Change{
+	lastChange := &LastChange{
 		ChangedDir: changedDir,
 		Path:       event.Name,
 		ModTime:    info.ModTime(),
 	}
 
-	if err := writeConfig(config); err != nil {
+	if err := writeLastChange(lastChange); err != nil {
 		log.Printf("Error writing config: %v", err)
 	}
 }

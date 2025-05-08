@@ -34,24 +34,34 @@ class HOTRELOAD_OT_start_polling_operator(bpy.types.Operator):
         global last_mod_time
 
         hotreload_path = os.path.join(WATCHED_DIR, ".hotreload")
-        if os.path.exists(hotreload_path):
-            current_mod_time = os.path.getmtime(hotreload_path)
+        if not os.path.exists(hotreload_path):
+            return
 
-            if current_mod_time > last_mod_time:
-                print("Detected change in", hotreload_path)
-                with open(hotreload_path, "r") as f:
-                    last_mod_time = current_mod_time
-                    data = json.load(f)
-                    last_change = data.get("last_change")
-                    watched_dirs = data.get("watched_dirs")
-                    for watched_dir_and_module_names in watched_dirs:
-                        watched_dir_split = watched_dir_and_module_names.split("|")
-                        if len(watched_dir_split) > 1:
-                            watched_dir, module_names = watched_dir_split
-                            changed_dir = last_change.get("changed_dir")
-                            if (changed_dir == "." and watched_dir == ".") or os.path.abspath(watched_dir) == os.path.abspath(changed_dir):
-                                for module_name in module_names.split(","):
-                                    self.reload_module(module_name)
+        last_change_path = hotreload_path + "_last_change"
+        if not os.path.exists(last_change_path):
+            return
+        last_change = None
+        with open(last_change_path, "r") as f:
+            last_change = json.load(f)
+        if last_change is None:
+            return
+        current_mod_time = os.path.getmtime(last_change_path)
+
+        if current_mod_time > last_mod_time:
+            print("Detected change in", last_change_path)
+            with open(hotreload_path, "r") as f:
+                last_mod_time = current_mod_time
+
+                data = json.load(f)
+                watched_dirs = data.get("watched_dirs")
+                for watched_dir_and_module_names in watched_dirs:
+                    watched_dir_split = watched_dir_and_module_names.split("|")
+                    if len(watched_dir_split) > 1:
+                        watched_dir, module_names = watched_dir_split
+                        changed_dir = last_change.get("changed_dir")
+                        if (changed_dir == "." and watched_dir == ".") or os.path.abspath(watched_dir) == os.path.abspath(changed_dir):
+                            for module_name in module_names.split(","):
+                                self.reload_module(module_name)
 
     def reload_module(self, module_name):
         try:

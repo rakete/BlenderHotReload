@@ -4,27 +4,20 @@ A Blender addon for automatically reloading other addons when changes are made t
 
 It is implemented with a smaller runner.go program that starts blender with a WATCHED_DIR environment variable, which is then used inside blender by the BlenderHotReload python addon.
 
-The runner.go program recursively watches all files under the directory where it was started for changes, and everytime something changes it notifies the BlenderHotReload addon about it. The addon will then reload the addon that was configured to be reloaded on a change. 
+The runner.go program recursively watches all files under the directory where it was started for changes, and everytime something changes it notifies the BlenderHotReload addon about it. The addon will then reload the addon that was configured to be reloaded on a change.
+
+The BlenderHotReload addon will only be active when blender is started through the runner.go program. This way only when you want to use blender to live debug while developing an addon you'll have the hot reloading functionality available, and it can't interfere with your normal blender usage.
 
 ## Installation
 
-### ~~From GitHub Release~~
-
-~~1. Download the latest release from [GitHub](https://github.com/rakete/BlenderHotReload/releases)~~  
-~~2. Open Blender and go to `Edit > Preferences > Addons`~~  
-~~3. Click "Install" button in top right corner~~  
-~~4. Select the downloaded zip file~~  
-~~5. Enable the addon in the list~~
-
-### Manually until I write a GitHub workflow
-
-1. Clone the repository
-2. go install
+1. Install Go
+2. Clone the repository
+3. `go install` inside the cloned repository to install `BlenderHotReload.exe` to `go/bin`
 3. Manually copy entire repository in `Blender\\scripts\\addons` directory
 4. Setup .hotreload (see below)
-4. Run BlenderHotReload.exe
-5. Enable plugin in Blender
-6. Start polling operator by clicking "Hot Reload" in upper right corner
+4. Run BlenderHotReload.exe at the root of your addons source code (if you can't make sure that you have `go/bin` in your `$PATH`)
+5. Enable addon `BlenderHotReload addon` in Blender
+6. Start polling operator by clicking `Hot Reload` in upper right corner
 
 ## Usage
 
